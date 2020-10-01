@@ -5,8 +5,14 @@ body {
 
 .header {
     width: 100%;
+    top: 0;
 }
 
 .headerStyle {
     color: rgb(175, 238, 238);
+}
+
+.body{
+    margin-top: 100px;
+    z-index: -1;
 }
