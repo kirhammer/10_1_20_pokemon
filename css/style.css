@@ -1,0 +1,12 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    width: 100%;
+}
+
+.headerStyle {
+    color: rgb(175, 238, 238);
+}
