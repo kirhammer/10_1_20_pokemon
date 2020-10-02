@@ -6,39 +6,72 @@
  * sistema de peticiones y respuestas 
  */
 
+//Botones de paginacion
+const prevButton = document.getElementById("previous-btn");
+const nextButton = document.getElementById("next-btn");
+
 //URL de la API
-const API = "https://rickandmortyapi.com/api/character";
+const API = "https://pokeapi.co/api/v2/pokemon/?offset=0&limit=24";
+
+let prevPage = undefined;
+let nextPage = undefined;
+
 //Obtener el retorno de la API
-const getData = (api) => {
-    return fetch(api)
+const getData = (api, append) => {
+     fetch(api)
+        //Obtengo listado de pokemons y solicito generacion de json
         .then((response) => response.json())
-        .then((json) => {
-            llenarDatos(json);
+        //Obtengo el listado de las url de cada pokemon y hago peticion al servidor
+        .then((response) => {
+            prevPage= response.previous;
+            nextPage= response.next;
+            return Promise.all(response.results.map(pokemon => fetch(pokemon.url)))
         })
-        .catch((error) => {
-            console.log("Error: ", error);
-        });
-};
+        //Obtnego listado de la informacion de cada pokemon y solicito generacion de json
+        .then(response => Promise.all(response.map(res => res.json())))
+        //La informacion de cada pokemon la envio a Llenar datos para pintar las tarjetas
+        .then(response => {
+            if(!append) document.getElementById("datosPersonajes").innerHTML = '';
+            response.forEach(pokemon => llenarDatos(pokemon, append))
+        })
+        .catch(error => console.log('Error', error))
+}
 
 // llenar datos en nuestra pagina
 
-const llenarDatos = (data) => {
-    let html = "";
-    data.results.forEach((pj) => {
-        html += '<div class="col">';
-        html += '<div class="card" style="width: 10rem;">';
-        html += `<img src="${pj.image}" class="card-img-top" alt="...">`;
-        html += '<div class="card-body">';
-        html += `<h5 class="card-title">${pj.name}</h5>`;
-        html += `<p class="card-text">Especie :${pj.species} </p>`;
-        html += '</div>';
-        html += '</div>';
-        html += '</div>';
+const llenarDatos = (pokemon) => {
+    let html = document.getElementById("datosPersonajes").innerHTML;
 
-    });
-    // Imprimir datos en HTML
+    html += '<div class="col-6 col-md-3 col-lg-3">';
+    html += '<div class="card shadow-sm rounded-lg my-3 pokemon-card" style="">';
+    html += `<img src="${pokemon.sprites.other['official-artwork']['front_default']}" class="card-img-top" alt="...">`;
+    html += '<div class="card-body">';
+    html += `<div class="row justify-content-center"><h5 class="card-title text-center">${pokemon.name[0].toUpperCase()}${pokemon.name.slice(1)}</h5></div>`;
+    html += `<div clas="col" style="font-size: 14px;">
+                <div clas="row"><label><span class="font-weight-bold">Height: </span>${pokemon.height}</label></div>
+                <div clas="row"><label><span class="font-weight-bold">XP: </span>${pokemon['base_experience']}</label></div>
+                <div clas="row"><label><span class="font-weight-bold">Abilities: </span>${pokemon.abilities.map(item => item.ability.name).join(', ')}</label></div>
+            </div>`;
+    html += `<div clas="row d-flex flex-wrap">
+            ${pokemon.stats.map(item => '<label class="badge badge-secondary mx-1"><span class="font-weight-bold">'+ item.stat.name +': </span>'+ item['base_stat'] +'</label>').join('')}
+    </div>`;
+    html += '</div>';
+    html += '</div>';
+    html += '</div>';
+
     document.getElementById("datosPersonajes").innerHTML = html;
 }
 
+
+prevButton.addEventListener('click', () =>{
+    console.log('Prev', prevPage)
+    prevPage? getData(prevPage, false) : null;
+});
+
+nextButton.addEventListener('click', () =>{
+    console.log('next', nextPage)
+    nextPage? getData(nextPage, false) : null;
+});
+
 // Activo o invoco la funcion
-getData(API);
+getData(API, true);
