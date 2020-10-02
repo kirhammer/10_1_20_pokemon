@@ -9,12 +9,13 @@
 //Botones de paginacion
 const prevButton = document.getElementById("previous-btn");
 const nextButton = document.getElementById("next-btn");
-
 //URL de la API
 const API = "https://pokeapi.co/api/v2/pokemon/?offset=0&limit=24";
 
 let prevPage = undefined;
 let nextPage = undefined;
+let count = undefined; 
+let currentPage = 1;
 
 //Obtener el retorno de la API
 const getData = (api, append) => {
@@ -25,6 +26,7 @@ const getData = (api, append) => {
         .then((response) => {
             prevPage= response.previous;
             nextPage= response.next;
+            count = response.count;
             return Promise.all(response.results.map(pokemon => fetch(pokemon.url)))
         })
         //Obtnego listado de la informacion de cada pokemon y solicito generacion de json
@@ -64,13 +66,21 @@ const llenarDatos = (pokemon) => {
 
 
 prevButton.addEventListener('click', () =>{
-    console.log('Prev', prevPage)
-    prevPage? getData(prevPage, false) : null;
+    if(prevPage){
+        getData(prevPage, false);
+        currentPage--;
+        prevButton.innerText = 'Página ' + (currentPage-1);
+        nextButton.innerText = 'Página ' + (currentPage+1);
+    }
 });
 
 nextButton.addEventListener('click', () =>{
-    console.log('next', nextPage)
-    nextPage? getData(nextPage, false) : null;
+    if(nextPage){
+        getData(nextPage, false);
+        currentPage++;
+        prevButton.innerText = 'Página ' + (currentPage-1);
+        nextButton.innerText = 'Página ' + (currentPage+1);
+    }
 });
 
 // Activo o invoco la funcion
